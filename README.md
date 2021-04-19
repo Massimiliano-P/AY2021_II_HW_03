@@ -52,7 +52,7 @@ Address      | Description   | R/W |
 0x06         | Ch1 Bit 07-0  |  R  |
 
 
-**Control Register 0 Description** (Address 0x00)
+**Control Register 1 Description** (Address 0x00)
 
 Bit    | Description           | R/W | Default |
 :-----:|-----------------------|:---:|:-------:|
@@ -73,7 +73,7 @@ computation of the average. Set the value of bits 2-5 of the Control Register 0
 to meet the requirements of the project.
 
 
-**Control Register 1 Description** (Address 0x00)
+**Control Register 2 Description** (Address 0x01)
 
 Bit    | Description           | R/W | Default |
 :-----:|-----------------------|:---:|:-------:|
