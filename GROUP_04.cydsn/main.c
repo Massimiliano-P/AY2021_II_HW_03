@@ -10,16 +10,22 @@
  * ========================================
 */
 #include "project.h"
+#include "InterruptRoutines.h"
+
 
 int main(void)
 {
     CyGlobalIntEnable; /* Enable global interrupts. */
 
     /* Place your initialization/startup code here (e.g. MyInst_Start()) */
-
+    uint8 i;
     for(;;)
     {
-        /* Place your application code here. */
+        if (do_average == 1){
+            do_average = 0;
+            for (i=0; i<N_SAMPLES; i++){
+            }
+        }
     }
 }
 
