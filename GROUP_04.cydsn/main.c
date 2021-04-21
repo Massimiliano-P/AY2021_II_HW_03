@@ -19,6 +19,11 @@ int main(void)
 
     /* Place your initialization/startup code here (e.g. MyInst_Start()) */
     uint8 i;
+    
+    DataBuffer[0] = 0xA0; 
+    DataBuffer[TRANSMIT_BUFFER_SIZE-1] = 0xC0;
+    
+    
     for(;;)
     {
         if (do_average == 1){
