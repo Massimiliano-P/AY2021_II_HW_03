@@ -12,19 +12,11 @@
 #include "InterruptRoutines.h"
 #include "project.h"
 
-uint8 sample_index = 0;
-
+extern volatile uint8_t do_sampling;
 
 CY_ISR(ADC_sampling_isr){
     Timer_ADC_ReadStatusRegister();
-    AMux_Select(LDR_CHANNEL);
-    sample [sample_index] = ADC_DelSig_Read32();
-    if (sample [sample_index] < 0) sample [sample_index] = 0;
-    if (sample [sample_index] > 65535) sample [sample_index] = 65535;
-    sample_index ++;
-    if (sample_index == N_SAMPLES){
-        sample_index = 0;
-        do_average = 1;
-    }
+    do_sampling=1;
+    
 }
 /* [] END OF FILE */
