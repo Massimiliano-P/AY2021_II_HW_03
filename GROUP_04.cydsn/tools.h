@@ -10,21 +10,16 @@
  * ========================================
 */
 
-
-#ifndef __INTERRUPT_ROUTINES_H
-    #define __INTERRUPT_ROUTINES_H
+#ifndef __TOOLS_H
+    #define __TOOLS_H
     
-    #include "cytypes.h"
+    #define OFF 0
+    #define ONLY_TMP 1
+    #define ONLY_LDR 2
+    #define ALL_IN 3
     
-    #define TMP_CHANNEL 0
-    #define LDR_CHANNEL 1
-
-    volatile uint8 do_average;
-    int32 sample;
     
-    CY_ISR_PROTO(ADC_sampling_isr);
     
 #endif
-
 
 /* [] END OF FILE */
