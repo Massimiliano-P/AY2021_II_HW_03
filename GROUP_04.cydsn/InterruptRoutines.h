@@ -15,12 +15,7 @@
     #define __INTERRUPT_ROUTINES_H
     
     #include "cytypes.h"
-    
-    #define TMP_CHANNEL 0
-    #define LDR_CHANNEL 1
-
-    volatile uint8 do_average;
-    int32 sample;
+    #include "tools.h"
     
     CY_ISR_PROTO(ADC_sampling_isr);
     

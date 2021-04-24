@@ -9,108 +9,139 @@
  *
  * ========================================
 */
+
 #include "project.h"
 #include "InterruptRoutines.h"
 #include "tools.h"
 
-#define SLAVE_BUFFER_SIZE 7
-#define WHO_AM_I 0xBC
-
-uint8_t state = OFF;
-
 uint8_t slaveBuffer[SLAVE_BUFFER_SIZE];
-
-volatile uint8_t do_sampling = 0;
-uint8_t sample_index = 0;
-uint32_t sample_sum = 0;
-uint32_t sample_avg = 0;
-uint8_t N_SAMPLES;
+uint8_t state = ALL_OFF;
 uint8_t control_register_1;
+volatile uint8_t do_sampling = 0;
+uint8_t n_samples = N_SAMPLES_DEFAULT;
+uint32_t ldr_sample = 0;
+uint32_t tmp_sample = 0;
+uint32_t ldr_sum = 0;
+uint32_t tmp_sum = 0;
+uint8_t sample_index = 0;
+
+
+
+//uint8_t ADC_sleeping = 0;
 
 int main(void)
 {   
+    init_peripherals();
     //initialize slaveBuffer
-    slaveBuffer [0] = 0b00010100;
-    slaveBuffer [1] = 0b00101000;
-    slaveBuffer [2] = WHO_AM_I;
-    slaveBuffer [3] = 0;
-    slaveBuffer [4] = 0;
-    slaveBuffer [5] = 0;
-    slaveBuffer [6] = 0;
-    //assign slaveBuffer to the I2C
-    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 4 ,slaveBuffer); 
-    
-    control_register_1 = slaveBuffer[0];
-    N_SAMPLES = (control_register_1 >> 2) & 0x0f;
+    init_slave();
+    control_register_1 = slaveBuffer[CTRL_REG_1];
+    n_samples = (slaveBuffer[CTRL_REG_1] >> 2) & 0x0f;
     
     CyGlobalIntEnable; /* Enable global interrupts. */
+    ISR_ADC_StartEx(ADC_sampling_isr);
 
     /* Place your initialization/startup code here (e.g. MyInst_Start()) */
     
     for(;;)
     {
-        if (state == OFF){
-        }
+        switch (state)
+        {
+            case ALL_OFF:
+                LED_Pin_Write(LED_OFF);
+                slaveBuffer[MSB_LDR]=0;
+                slaveBuffer[LSB_LDR]=0;
+                slaveBuffer[MSB_TMP]=0;
+                slaveBuffer[LSB_TMP]=0;
+                /*
+                if (!ADC_sleeping)
+                {
+                    ADC_DelSig_Sleep();
+                    ADC_sleeping=1;
+                }*/
+                break;
+                
+            case ONLY_TMP:
+                /*
+                if (ADC_sleeping)
+                {
+                    ADC_DelSig_Wakeup();
+                    ADC_sleeping = 0;
+                }*/
+                LED_Pin_Write(LED_OFF);
+                if (do_sampling)
+                {
+                    AMux_Select(TMP_CHANNEL);
+                    tmp_sample = read_sample();
+                    tmp_sum += tmp_sample;
+                    sample_index ++;
+    
+                    if (sample_index == n_samples)
+                    {
+                        sample_index = 0;
+                        compute_average (tmp_sum, MSB_TMP, LSB_TMP);  
+                        tmp_sum = 0;
+                    }   
+                    
+                    do_sampling = 0;
+                    
+                }
+                break;
+                
+            case ONLY_LDR:
+                /*
+                if (ADC_sleeping)
+                {
+                    ADC_DelSig_Wakeup();
+                    ADC_sleeping = 0;
+                }*/
+                LED_Pin_Write(LED_OFF);
+                if (do_sampling)
+                {
+                    AMux_Select(LDR_CHANNEL);
+                    ldr_sample = read_sample();
+                    ldr_sum+=ldr_sample;
+                    sample_index ++;
+    
+                    if (sample_index == n_samples)
+                    {
+                        sample_index = 0;
+                        compute_average (ldr_sum, MSB_LDR, LSB_LDR);  
+                        ldr_sum = 0;
+                    }     
+                    do_sampling = 0;
+                }
+                break;
+                
+            case ALL_IN:
+                /*
+                if (ADC_sleeping){
+                    ADC_DelSig_Wakeup();
+                    ADC_sleeping = 0;
+                }*/
+                LED_Pin_Write(LED_ON);
+                if (do_sampling)
+                {
+                    AMux_Select(TMP_CHANNEL);  
+                    tmp_sample = read_sample();
+                    tmp_sum+=tmp_sample;
         
+                    AMux_Select(LDR_CHANNEL);
+                    ldr_sample = read_sample();
+                    ldr_sum+=ldr_sample;
+                    
+                    sample_index ++;
         
-        if (state == ONLY_TMP){
-            if (do_sampling){
-                AMux_Select(TMP_CHANNEL);
-                sample = ADC_DelSig_Read32();
-                if (sample < 0) sample = 0;
-                if (sample > 65535) sample = 65535;
-                sample_index ++;
-                sample_sum+=sample;
-                if (sample_index == N_SAMPLES){
-                    sample_index = 0;
-                    sample_avg = sample_sum/N_SAMPLES;
-                    slaveBuffer [3]  = (sample_avg>>8) & 0xff;
-                    slaveBuffer [4]  = sample_avg & 0xff;
-                    sample_sum = 0;                        
-                 }
-            }
-        }
-        
-        
-        if (state == ONLY_LDR){
-            if (do_sampling){
-                AMux_Select(LDR_CHANNEL);
-                sample = ADC_DelSig_Read32();
-                if (sample < 0) sample = 0;
-                if (sample > 65535) sample = 65535;
-                sample_index ++;
-                sample_sum+=sample;
-                if (sample_index == N_SAMPLES){
-                    sample_index = 0;
-                    sample_avg = sample_sum/N_SAMPLES;
-                    slaveBuffer [5]  = (sample_avg>>8) & 0xff;
-                    slaveBuffer [6]  = sample_avg & 0xff;
-                    sample_sum = 0;                        
-                 }
-            }
-        }
-        
-        
-        if (state == ALL_IN){
-            if (do_sampling){
-                AMux_Select(LDR_CHANNEL);
-                sample = ADC_DelSig_Read32();
-                if (sample < 0) sample = 0;
-                if (sample > 65535) sample = 65535;
-                sample_index ++;
-                sample_sum+=sample;
-                if (sample_index == N_SAMPLES){
-                    sample_index = 0;
-                    sample_avg = sample_sum/N_SAMPLES;
-                    slaveBuffer [5]  = (sample_avg>>8) & 0xff;
-                    slaveBuffer [6]  = sample_avg & 0xff;
-                    sample_sum = 0;                        
-                 }
-            }
-        }
-
-
-            
+                    if (sample_index == n_samples)
+                    {
+                        sample_index = 0;
+                        compute_average (tmp_sum, MSB_TMP, LSB_TMP);
+                        compute_average (ldr_sum, MSB_LDR, LSB_LDR);
+                        tmp_sum = 0;
+                        ldr_sum = 0;
+                    }   
+                }
+                break;
+        }   
     }
 }
 
