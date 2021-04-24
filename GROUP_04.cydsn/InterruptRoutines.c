@@ -1,12 +1,11 @@
 /* ========================================
  *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
+ * AY2021 HW_03 
+ * GROUP 04
  *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
+ * Authors: 
+ * Beatrice Pedretti, Massimiliano Poletti
+ * 
  * ========================================
 */
 #include "InterruptRoutines.h"
@@ -23,6 +22,8 @@ extern uint32_t ldr_sum;
 extern uint32_t tmp_sum ;
 extern uint8_t sample_index;
 
+
+//simple ISR that sets a flag to 1 when it's time to sample (set by user, 4ms default)
 CY_ISR(ADC_sampling_isr)
 {
     Timer_ADC_ReadStatusRegister();
@@ -31,20 +32,24 @@ CY_ISR(ADC_sampling_isr)
 
 void EZI2C_ISR_ExitCallback(void)
 {
+    //if value of slaveBuffer changed (updated in BCP)...
     if (slaveBuffer[CTRL_REG_1] != control_register_1) 
     {
+        //...set new control register
         control_register_1 = slaveBuffer[CTRL_REG_1];
+        //...new state
         state = control_register_1 & 0b00000011; 
+        //...update n_samples
         n_samples = (slaveBuffer[CTRL_REG_1] >> 2) & 0x0f;
-        ldr_sum = 0;
-        tmp_sum = 0;
-        sample_index = 0;
+        //reset everything because the state changes here
+        reset_variables();
     }
     
     if (slaveBuffer[CTRL_REG_2] != control_register_2)
     {
         control_register_2 = slaveBuffer[CTRL_REG_2];
         Timer_ADC_WritePeriod(control_register_2);
+        reset_variables();
     }
 }
 

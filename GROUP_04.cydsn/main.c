@@ -1,12 +1,11 @@
 /* ========================================
  *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
+ * AY2021 HW_03 
+ * GROUP 04
  *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
+ * Authors: 
+ * Beatrice Pedretti, Massimiliano Poletti
+ * 
  * ========================================
 */
 
@@ -14,10 +13,9 @@
 #include "InterruptRoutines.h"
 #include "tools.h"
 
+//global variables declaration
 uint8_t slaveBuffer[SLAVE_BUFFER_SIZE];
 uint8_t state = ALL_OFF;
-uint8_t control_register_1;
-uint8_t control_register_2;
 volatile uint8_t do_sampling = 0;
 uint8_t n_samples;
 uint32_t ldr_sample = 0;
@@ -25,18 +23,24 @@ uint32_t tmp_sample = 0;
 uint32_t ldr_sum = 0;
 uint32_t tmp_sum = 0;
 uint8_t sample_index = 0;
+volatile uint8_t led_on = 0;
 
 
 
-//uint8_t ADC_sleeping = 0;
+/*INFO
+  tools.h is a header file that contains all defines and all custom functions' declarations
+  tools.c contains the definitions of said functions
+*/
+
 
 int main(void)
 {   
+    //initialize peripherals
     init_peripherals();
     //initialize slaveBuffer
     init_slave();
-    control_register_1 = slaveBuffer[CTRL_REG_1];
-    control_register_2 = slaveBuffer[CTRL_REG_2];
+    
+    //initialize n_samples to value in Control Register 1 (0 when turning on device)
     n_samples = (slaveBuffer[CTRL_REG_1] >> 2) & 0x0f;
     
     CyGlobalIntEnable; /* Enable global interrupts. */
@@ -48,42 +52,62 @@ int main(void)
     {
         switch (state)
         {
-            case ALL_OFF:
-                LED_Pin_Write(LED_OFF);
+            case ALL_OFF: //state 00
+                if (led_on)
+                {
+                    LED_Pin_Write(LED_OFF); //turn off LED in case it was on
+                    led_on = 0;
+                }
+                //set values to 0 
                 slaveBuffer[MSB_LDR]=0;
                 slaveBuffer[LSB_LDR]=0;
                 slaveBuffer[MSB_TMP]=0;
                 slaveBuffer[LSB_TMP]=0;
+                reset_variables();
                 break;
                 
-            case ONLY_TMP:
+            case ONLY_TMP: //state 01
+                //set light reading to 0
                 slaveBuffer[MSB_LDR]=0;
                 slaveBuffer[LSB_LDR]=0;
-
-                LED_Pin_Write(LED_OFF);
+                
+                //turn off LED in case it was on
+                if (led_on)
+                {
+                    LED_Pin_Write(LED_OFF); 
+                    led_on = 0;
+                }
+                //do_sampling is a flag set to 1 in the ISR when the timer reaches overflow
+                //since ADC_DelSig_Read32() is a blocking function (as stated in its definition), we sample here instead of inside the ISR
                 if (do_sampling)
                 {
+                    //select channel
                     AMux_Select(TMP_CHANNEL);
+                    //read sample
                     tmp_sample = read_sample();
+                    //accumulate sample values inside tmp_sum
                     tmp_sum += tmp_sample;
                     sample_index ++;
     
                     if (sample_index == n_samples)
                     {
-                        sample_index = 0;
+                        //compute average (function is explained in tools.c)
                         compute_average (tmp_sum, MSB_TMP, LSB_TMP);  
-                        tmp_sum = 0;
-                    }   
-                    
-                    do_sampling = 0;
-                    
+                        reset_variables();
+                    }  
+                    //sampling done -> reset flag
+                    do_sampling = 0;         
                 }
                 break;
                 
-            case ONLY_LDR:
+            case ONLY_LDR: //state 10
                 slaveBuffer[MSB_TMP]=0;
                 slaveBuffer[LSB_TMP]=0;
-                LED_Pin_Write(LED_OFF);
+                if (led_on)
+                {
+                    LED_Pin_Write(LED_OFF); //turn off LED in case it was on
+                    led_on = 0;
+                }
                 if (do_sampling)
                 {
                     AMux_Select(LDR_CHANNEL);
@@ -93,16 +117,19 @@ int main(void)
     
                     if (sample_index == n_samples)
                     {
-                        sample_index = 0;
                         compute_average (ldr_sum, MSB_LDR, LSB_LDR);  
-                        ldr_sum = 0;
+                        reset_variables();
                     }     
                     do_sampling = 0;
                 }
                 break;
                 
-            case ALL_IN:
-                LED_Pin_Write(LED_ON);
+            case ALL_IN: //state 11
+                if (!led_on)
+                {
+                    LED_Pin_Write(LED_ON); //turn off LED in case it was on
+                    led_on = 1;
+                }
                 if (do_sampling)
                 {
                     AMux_Select(TMP_CHANNEL);  
@@ -117,11 +144,9 @@ int main(void)
         
                     if (sample_index == n_samples)
                     {
-                        sample_index = 0;
                         compute_average (tmp_sum, MSB_TMP, LSB_TMP);
                         compute_average (ldr_sum, MSB_LDR, LSB_LDR);
-                        tmp_sum = 0;
-                        ldr_sum = 0;
+                        reset_variables();
                     }   
                 }
                 break;

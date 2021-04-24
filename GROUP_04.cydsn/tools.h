@@ -1,17 +1,17 @@
 /* ========================================
  *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
+ * AY2021 HW_03 
+ * GROUP 04
  *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
+ * Authors: 
+ * Beatrice Pedretti, Massimiliano Poletti
+ * 
  * ========================================
 */
 
 #include "project.h"
 
+//all defines
 #define SLAVE_BUFFER_SIZE 7
 #define WHO_AM_I 0xBC
 
@@ -36,11 +36,11 @@
 
 #define N_SAMPLES_DEFAULT 5
 
-
+//custom functions declarations
 void init_peripherals (void);
 void init_slave(void);
 uint32_t read_sample (void);
 void compute_average (uint32_t, uint8_t, uint8_t);
-
+void reset_variables (void);
 
 /* [] END OF FILE */

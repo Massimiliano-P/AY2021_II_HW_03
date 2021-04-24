@@ -1,12 +1,11 @@
 /* ========================================
  *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
+ * AY2021 HW_03 
+ * GROUP 04
  *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
+ * Authors: 
+ * Beatrice Pedretti, Massimiliano Poletti
+ * 
  * ========================================
 */
 #ifndef CYAPICALLBACKS_H
