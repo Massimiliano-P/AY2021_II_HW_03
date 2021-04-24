@@ -19,7 +19,7 @@ uint8_t state = ALL_OFF;
 uint8_t control_register_1;
 uint8_t control_register_2;
 volatile uint8_t do_sampling = 0;
-uint8_t n_samples = N_SAMPLES_DEFAULT;
+uint8_t n_samples;
 uint32_t ldr_sample = 0;
 uint32_t tmp_sample = 0;
 uint32_t ldr_sum = 0;
@@ -54,21 +54,12 @@ int main(void)
                 slaveBuffer[LSB_LDR]=0;
                 slaveBuffer[MSB_TMP]=0;
                 slaveBuffer[LSB_TMP]=0;
-                /*
-                if (!ADC_sleeping)
-                {
-                    ADC_DelSig_Sleep();
-                    ADC_sleeping=1;
-                }*/
                 break;
                 
             case ONLY_TMP:
-                /*
-                if (ADC_sleeping)
-                {
-                    ADC_DelSig_Wakeup();
-                    ADC_sleeping = 0;
-                }*/
+                slaveBuffer[MSB_LDR]=0;
+                slaveBuffer[LSB_LDR]=0;
+
                 LED_Pin_Write(LED_OFF);
                 if (do_sampling)
                 {
@@ -90,12 +81,8 @@ int main(void)
                 break;
                 
             case ONLY_LDR:
-                /*
-                if (ADC_sleeping)
-                {
-                    ADC_DelSig_Wakeup();
-                    ADC_sleeping = 0;
-                }*/
+                slaveBuffer[MSB_TMP]=0;
+                slaveBuffer[LSB_TMP]=0;
                 LED_Pin_Write(LED_OFF);
                 if (do_sampling)
                 {
@@ -115,11 +102,6 @@ int main(void)
                 break;
                 
             case ALL_IN:
-                /*
-                if (ADC_sleeping){
-                    ADC_DelSig_Wakeup();
-                    ADC_sleeping = 0;
-                }*/
                 LED_Pin_Write(LED_ON);
                 if (do_sampling)
                 {

@@ -48,7 +48,7 @@ uint32_t read_sample (void)
 void compute_average (uint32_t sum, uint8_t msb, uint8_t lsb)
 {
     uint16_t average;
-    average = (uint16_t)sum/n_samples;
+    average = (uint16_t)(sum/n_samples);
     slaveBuffer [msb]  = (average>>8) & 0xff;
     slaveBuffer [lsb]  = average & 0xff;
    
