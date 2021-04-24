@@ -26,13 +26,12 @@ void init_peripherals()
 
 void init_slave ()
 {
-    slaveBuffer [CTRL_REG_1] = 0b00010100;
-    slaveBuffer [CTRL_REG_2] = 0b00101000; 
+    uint8_t slave_index;
+    for (slave_index=0; slave_index < SLAVE_BUFFER_SIZE; slave_index++)
+    {
+        slaveBuffer [slave_index] = 0;
+    }
     slaveBuffer [WHO_AM_I_POS] = WHO_AM_I;
-    slaveBuffer [MSB_TMP] = 0;
-    slaveBuffer [LSB_TMP] = 0;
-    slaveBuffer [MSB_LDR] = 0;
-    slaveBuffer [LSB_LDR] = 0;
     //assign slaveBuffer to the I2C
     EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 5 ,slaveBuffer); 
 }

@@ -17,6 +17,7 @@
 uint8_t slaveBuffer[SLAVE_BUFFER_SIZE];
 uint8_t state = ALL_OFF;
 uint8_t control_register_1;
+uint8_t control_register_2;
 volatile uint8_t do_sampling = 0;
 uint8_t n_samples = N_SAMPLES_DEFAULT;
 uint32_t ldr_sample = 0;
@@ -35,6 +36,7 @@ int main(void)
     //initialize slaveBuffer
     init_slave();
     control_register_1 = slaveBuffer[CTRL_REG_1];
+    control_register_2 = slaveBuffer[CTRL_REG_2];
     n_samples = (slaveBuffer[CTRL_REG_1] >> 2) & 0x0f;
     
     CyGlobalIntEnable; /* Enable global interrupts. */
