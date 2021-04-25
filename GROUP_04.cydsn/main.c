@@ -13,46 +13,45 @@
 #include "InterruptRoutines.h"
 #include "tools.h"
 
-//global variables declaration
-uint8_t slaveBuffer[SLAVE_BUFFER_SIZE];
-uint8_t state = ALL_OFF;
+
+// EZI2C slave buffer 
+uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; 
+uint8_t control_register_1; 
+uint8_t control_register_2; 
+
+// state control variables
+uint8_t state = ALL_OFF;  
+volatile uint8_t led_on = 0; 
+
+// sampling variables
+uint8_t n_samples; 
+uint32_t ldr_sample = 0; 
+uint32_t tmp_sample = 0; 
+uint32_t ldr_sum = 0; 
+uint32_t tmp_sum = 0; 
+uint8_t sample_index = 0; 
+
+//sampling flag
 volatile uint8_t do_sampling = 0;
-uint8_t n_samples;
-uint32_t ldr_sample = 0;
-uint32_t tmp_sample = 0;
-uint32_t ldr_sum = 0;
-uint32_t tmp_sum = 0;
-uint8_t sample_index = 0;
-volatile uint8_t led_on = 0;
-
-
-
-/*INFO
-  tools.h is a header file that contains all defines and all custom functions' declarations
-  tools.c contains the definitions of said functions
-*/
 
 
 int main(void)
 {   
+    //enable global interrupts
+    CyGlobalIntEnable;
+    
     //initialize peripherals
     init_peripherals();
+    
     //initialize slaveBuffer
     init_slave();
-    
-    //initialize n_samples to value in Control Register 1 (0 when turning on device)
-    n_samples = (slaveBuffer[CTRL_REG_1] >> 2) & 0x0f;
-    
-    CyGlobalIntEnable; /* Enable global interrupts. */
-    ISR_ADC_StartEx(ADC_sampling_isr);
-
-    /* Place your initialization/startup code here (e.g. MyInst_Start()) */
+            
     
     for(;;)
     {
         switch (state)
         {
-            case ALL_OFF: //state 00
+            case ALL_OFF: //state 00 
                 if (led_on)
                 {
                     LED_Pin_Write(LED_OFF); //turn off LED in case it was on

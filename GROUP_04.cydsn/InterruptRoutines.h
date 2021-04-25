@@ -14,7 +14,6 @@
     #define __INTERRUPT_ROUTINES_H
     
     #include "cytypes.h"
-    #include "tools.h"
     
     CY_ISR_PROTO(ADC_sampling_isr);
     
