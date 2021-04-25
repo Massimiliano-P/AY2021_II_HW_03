@@ -1,0 +1,46 @@
+;uncomment the following lines to check who am I
+;w 08 02 p
+;r 08 x p
+;=============================================
+
+;this is the line to set timer to default period (40 for 250Hz, needed to average and sent 5 samples @50Hz)
+;40 in hexadecimal is 28. Check table in .xslx file to see other combinations of parameters
+;if you want to set a different timer period, change '28' to whatever you need
+;w 08 01 28 p
+
+;=============================================
+
+;uncomment following to check that in status 0b00 nothing is sampled
+;w 08 00 14 ;all off
+;w 08 03 p
+;r 08 @1temperature @0temperature @1light @0light p
+
+;=============================================
+
+;uncomment following to set 5 samples to average for temperature only (status 0b01)
+;w 08 00 15 p
+;uncomment following lines and press "repeat" to see temperature chart
+;w 08 03 p
+;r 08 @1temperature @0temperature p
+
+;=============================================
+
+;uncomment following to set average of 5 samples for light only (status 0b10)
+;w 08 00 16 p
+;uncomment following lines and press "repeat" to see light chart
+;w 08 05 p
+;r 08 @1light @0light p
+
+;=============================================
+
+;uncomment following to average 5 samples for both sensors (status 0b11)
+;w 08 00 17 p
+;uncomment following lines and press "repeat" to see charts
+;w 08 03 p
+;r 08 @1temperature @0temperature @1light @0light p
+
+
+
+
+
+

@@ -46,6 +46,7 @@ int main(void)
     //initialize slaveBuffer
     init_slave();
             
+    Timer_ADC_WritePeriod(slaveBuffer[CTRL_REG_2]);
     
     for(;;)
     {
@@ -58,17 +59,14 @@ int main(void)
                     led_on = 0;
                 }
                 //set values to 0 
-                slaveBuffer[MSB_LDR]=0;
-                slaveBuffer[LSB_LDR]=0;
-                slaveBuffer[MSB_TMP]=0;
-                slaveBuffer[LSB_TMP]=0;
+                reset_ldr();
+                reset_temp();
                 reset_variables();
                 break;
                 
             case ONLY_TMP: //state 01
                 //set light reading to 0
-                slaveBuffer[MSB_LDR]=0;
-                slaveBuffer[LSB_LDR]=0;
+                reset_ldr();
                 
                 //turn off LED in case it was on
                 if (led_on)
@@ -100,8 +98,7 @@ int main(void)
                 break;
                 
             case ONLY_LDR: //state 10
-                slaveBuffer[MSB_TMP]=0;
-                slaveBuffer[LSB_TMP]=0;
+                reset_temp();
                 if (led_on)
                 {
                     LED_Pin_Write(LED_OFF); //turn off LED in case it was on

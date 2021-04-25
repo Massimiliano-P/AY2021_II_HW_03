@@ -79,5 +79,17 @@ void reset_variables (void)
     sample_index = 0;
 }
 
+void reset_temp (void)
+{
+    slaveBuffer[MSB_TMP]=0;
+    slaveBuffer[LSB_TMP]=0;    
+}
+
+void reset_ldr (void)
+{
+    slaveBuffer[MSB_LDR]=0;
+    slaveBuffer[LSB_LDR]=0;  
+}
+
 
 /* [] END OF FILE */

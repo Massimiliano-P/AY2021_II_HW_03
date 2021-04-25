@@ -62,5 +62,7 @@ void init_slave(void);
 uint32_t read_sample (void);
 void compute_average (uint32_t, uint8_t, uint8_t);
 void reset_variables (void);
+void reset_temp (void);
+void reset_ldr (void);
 
 /* [] END OF FILE */
