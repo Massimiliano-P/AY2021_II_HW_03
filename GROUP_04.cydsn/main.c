@@ -18,6 +18,7 @@
 uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; 
 uint8_t control_register_1; 
 uint8_t control_register_2; 
+volatile uint8_t EZI2C_flag = 0;
 
 // state control variables
 uint8_t state = ALL_OFF;  
@@ -47,6 +48,12 @@ int main(void)
     
     for(;;)
     {
+        if (EZI2C_flag) 
+        {
+            update_control();
+            EZI2C_flag = 0;
+        }
+        
         switch (state)
         {                
             case ONLY_TMP: //state 01

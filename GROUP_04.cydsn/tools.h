@@ -55,6 +55,7 @@ extern uint32_t ldr_sum;
 extern uint32_t tmp_sum ;
 extern uint8_t sample_index;
 extern volatile uint8_t do_sampling;
+extern volatile uint8_t EZI2C_flag;
 
 //custom functions declarations
 void init_peripherals (void);
@@ -64,5 +65,8 @@ void compute_average (uint32_t, uint8_t, uint8_t);
 void reset_variables (void);
 void reset_temp (void);
 void reset_ldr (void);
+void update_control(void);
+
+
 
 /* [] END OF FILE */
