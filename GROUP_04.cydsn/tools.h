@@ -55,7 +55,6 @@ extern uint32_t ldr_sum;
 extern uint32_t tmp_sum ;
 extern uint8_t sample_index;
 extern volatile uint8_t do_sampling;
-extern volatile uint8_t state_changed;
 
 //custom functions declarations
 void init_peripherals (void);

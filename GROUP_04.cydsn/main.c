@@ -22,9 +22,6 @@ uint8_t control_register_2;
 // state control variables
 uint8_t state = ALL_OFF;  
 
-//state flag
-volatile uint8_t state_changed = 0;
-
 // sampling variables
 uint8_t n_samples; 
 uint32_t ldr_sum = 0; 
@@ -51,28 +48,8 @@ int main(void)
     for(;;)
     {
         switch (state)
-        {
-            case ALL_OFF: //state 00 
-                if (state_changed)
-                {
-                    LED_Pin_Write(LED_OFF); //turn off LED in case it was on
-                    //sensors readings reset to 0 
-                    reset_ldr();
-                    reset_temp();
-                    state_changed = 0;
-                    //variables already reset upon state changed
-                }
-                break;
-                
+        {                
             case ONLY_TMP: //state 01
-                if (state_changed)
-                {
-                    LED_Pin_Write(LED_OFF); //turn off LED in case it was on
-                    //light sensor reading reset to zero 
-                    reset_ldr();
-                    state_changed = 0;
-                    //variables already reset upon state changed
-                }
                 //do_sampling is a flag set to 1 in the ISR when the timer reaches overflow
                 //since ADC_DelSig_Read32() is a blocking function (as stated in its definition), we sample here instead of inside the ISR
                 if (do_sampling)
@@ -93,14 +70,6 @@ int main(void)
                 break;
                 
             case ONLY_LDR: //state 10
-                if (state_changed)
-                {
-                    LED_Pin_Write(LED_OFF); //turn off LED in case it was on
-                    //temperature sensor reading reset to 0 
-                    reset_temp();
-                    state_changed = 0;
-                    //variables already reset upon state changed
-                }
                 if (do_sampling)
                 {
                     ldr_sum += read_sample(LDR_CHANNEL);
@@ -116,11 +85,6 @@ int main(void)
                 break;
                 
             case ALL_IN: //state 11
-                if (state_changed)
-                {
-                    LED_Pin_Write(LED_ON); //turn off LED in case it was on
-                    state_changed = 0;
-                }
                 if (do_sampling)
                 { 
                     tmp_sum += read_sample(TMP_CHANNEL);
