@@ -8,15 +8,19 @@
 ;if you want to set a different timer period, change '28' to whatever you need
 ;w 08 01 28 p
 
+;PLEASE SET TIMER appropriately, otherwise readings will be all 0
+
 ;=============================================
 
 ;uncomment following to check that in status 0b00 nothing is sampled
-;w 08 00 14 ;all off
+;w 08 00 14 p
+;if you run the two lines below you will see that all readings are 0
 ;w 08 03 p
 ;r 08 @1temperature @0temperature @1light @0light p
 
 ;=============================================
 
+;for the readings, we have set n_samples to 5 in all cases. Check Excel file to change parameters
 ;uncomment following to set 5 samples to average for temperature only (status 0b01)
 ;w 08 00 15 p
 ;uncomment following lines and press "repeat" to see temperature chart
