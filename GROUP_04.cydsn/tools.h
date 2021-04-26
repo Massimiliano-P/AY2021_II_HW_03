@@ -55,11 +55,12 @@ extern uint32_t ldr_sum;
 extern uint32_t tmp_sum ;
 extern uint8_t sample_index;
 extern volatile uint8_t do_sampling;
+extern volatile uint8_t state_changed;
 
 //custom functions declarations
 void init_peripherals (void);
 void init_slave(void);
-uint32_t read_sample (void);
+uint32_t read_sample (uint8_t channel);
 void compute_average (uint32_t, uint8_t, uint8_t);
 void reset_variables (void);
 void reset_temp (void);

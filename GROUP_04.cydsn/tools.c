@@ -52,9 +52,10 @@ void init_slave ()
 
 //read sample from ADC
 //this function is called in main.c since ADC_DelSig_Read32 is a blocking function
-uint32_t read_sample (void)
+uint32_t read_sample (uint8_t channel)
 {
     uint32_t sample;
+    AMux_Select(channel);
     sample = ADC_DelSig_Read32();
     //anti windup
     if (sample <= 0) sample = 0;

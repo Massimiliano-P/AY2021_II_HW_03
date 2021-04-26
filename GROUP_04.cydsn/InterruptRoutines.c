@@ -25,14 +25,18 @@ void EZI2C_ISR_ExitCallback(void)
     //if value of slaveBuffer[0] changed (updated in BCP)...
     if (slaveBuffer[CTRL_REG_1] != control_register_1) 
     {
-        //...update the copy of slaveBuffer[0]
-        control_register_1 = slaveBuffer[CTRL_REG_1];
-        //...update the state
-        state = control_register_1 & 0b00000011; 
+        if ((slaveBuffer[CTRL_REG_1] & 0b00000011) != (control_register_1 & 0b00000011))
+        {
+            //...update the state
+            state = slaveBuffer[CTRL_REG_1] & 0b00000011; 
+            state_changed = 1;
+        }
         //...update n_samples
         n_samples = (slaveBuffer[CTRL_REG_1] >> 2) & 0x0f;
-        //reset everything because the state changes here
+        //reset 
         reset_variables();
+        //...update the copy of slaveBuffer[0]
+        control_register_1 = slaveBuffer[CTRL_REG_1];
     }
     
     //if value of slaveBuffer[1] changed (updated in BCP)...

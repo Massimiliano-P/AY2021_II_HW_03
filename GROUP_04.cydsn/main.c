@@ -21,12 +21,12 @@ uint8_t control_register_2;
 
 // state control variables
 uint8_t state = ALL_OFF;  
-volatile uint8_t led_on = 0; 
+
+//state flag
+volatile uint8_t state_changed = 0;
 
 // sampling variables
 uint8_t n_samples; 
-uint32_t ldr_sample = 0; 
-uint32_t tmp_sample = 0; 
 uint32_t ldr_sum = 0; 
 uint32_t tmp_sum = 0; 
 uint8_t sample_index = 0; 
@@ -53,37 +53,32 @@ int main(void)
         switch (state)
         {
             case ALL_OFF: //state 00 
-                if (led_on)
+                if (state_changed)
                 {
                     LED_Pin_Write(LED_OFF); //turn off LED in case it was on
-                    led_on = 0;
+                    //sensors readings reset to 0 
+                    reset_ldr();
+                    reset_temp();
+                    state_changed = 0;
+                    //variables already reset upon state changed
                 }
-                //set values to 0 
-                reset_ldr();
-                reset_temp();
-                reset_variables();
                 break;
                 
             case ONLY_TMP: //state 01
-                //set light reading to 0
-                reset_ldr();
-                
-                //turn off LED in case it was on
-                if (led_on)
+                if (state_changed)
                 {
-                    LED_Pin_Write(LED_OFF); 
-                    led_on = 0;
+                    LED_Pin_Write(LED_OFF); //turn off LED in case it was on
+                    //light sensor reading reset to zero 
+                    reset_ldr();
+                    state_changed = 0;
+                    //variables already reset upon state changed
                 }
                 //do_sampling is a flag set to 1 in the ISR when the timer reaches overflow
                 //since ADC_DelSig_Read32() is a blocking function (as stated in its definition), we sample here instead of inside the ISR
                 if (do_sampling)
                 {
-                    //select channel
-                    AMux_Select(TMP_CHANNEL);
-                    //read sample
-                    tmp_sample = read_sample();
-                    //accumulate sample values inside tmp_sum
-                    tmp_sum += tmp_sample;
+                    //read sample and accumulate sample values inside tmp_sum
+                    tmp_sum += read_sample(TMP_CHANNEL);
                     sample_index ++;
     
                     if (sample_index == n_samples)
@@ -98,17 +93,17 @@ int main(void)
                 break;
                 
             case ONLY_LDR: //state 10
-                reset_temp();
-                if (led_on)
+                if (state_changed)
                 {
                     LED_Pin_Write(LED_OFF); //turn off LED in case it was on
-                    led_on = 0;
+                    //temperature sensor reading reset to 0 
+                    reset_temp();
+                    state_changed = 0;
+                    //variables already reset upon state changed
                 }
                 if (do_sampling)
                 {
-                    AMux_Select(LDR_CHANNEL);
-                    ldr_sample = read_sample();
-                    ldr_sum+=ldr_sample;
+                    ldr_sum += read_sample(LDR_CHANNEL);
                     sample_index ++;
     
                     if (sample_index == n_samples)
@@ -121,20 +116,16 @@ int main(void)
                 break;
                 
             case ALL_IN: //state 11
-                if (!led_on)
+                if (state_changed)
                 {
                     LED_Pin_Write(LED_ON); //turn off LED in case it was on
-                    led_on = 1;
+                    state_changed = 0;
                 }
                 if (do_sampling)
-                {
-                    AMux_Select(TMP_CHANNEL);  
-                    tmp_sample = read_sample();
-                    tmp_sum+=tmp_sample;
+                { 
+                    tmp_sum += read_sample(TMP_CHANNEL);
         
-                    AMux_Select(LDR_CHANNEL);
-                    ldr_sample = read_sample();
-                    ldr_sum+=ldr_sample;
+                    ldr_sum += read_sample(LDR_CHANNEL);
                     
                     sample_index ++;
         
