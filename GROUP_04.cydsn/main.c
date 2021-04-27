@@ -35,7 +35,7 @@ uint8_t slaveBuffer[SLAVE_BUFFER_SIZE];
 uint8_t control_register_1; 
 uint8_t control_register_2; 
 
-// EZI2C flag: switched on by EZI2C_ISR_ExitCallback
+// EZI2C flag: switched on by EZI2C_ISR_ExitCallback 
 volatile uint8_t EZI2C_flag = 0;
 
 // state 
