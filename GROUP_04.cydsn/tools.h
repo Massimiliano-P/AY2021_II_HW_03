@@ -6,9 +6,11 @@
  * Authors: 
  * Beatrice Pedretti, Massimiliano Poletti
  * 
- * INFO
- * tools.h is a header file that contains useful constants and all custom functions' declarations
- * tools.c contains the definitions of these functions
+ * tools.h contains:
+ * - useful constants 
+ * - custom functions declarations
+ * - extern declarations of global variables
+ * 
  *
  * ========================================
 */
@@ -17,12 +19,12 @@
 
 //slave buffer constants
 #define SLAVE_BUFFER_SIZE 7
-#define WHO_AM_I 0xBC
+#define SLAVE_IDENTIFIER 0xBC
 
 //slave buffer registers
 #define CTRL_REG_1 0
 #define CTRL_REG_2 1
-#define WHO_AM_I_POS 2
+#define WHO_AM_I 2
 #define MSB_TMP 3
 #define LSB_TMP 4
 #define MSB_LDR 5
@@ -42,10 +44,8 @@
 #define LED_ON 1
 #define LED_OFF 0
 
-//sampling
-#define N_SAMPLES_DEFAULT 5
 
-//main.c global variables
+//main.c global variables that are needed in other files
 extern uint8_t slaveBuffer[SLAVE_BUFFER_SIZE];
 extern uint8_t control_register_1; 
 extern uint8_t control_register_2;

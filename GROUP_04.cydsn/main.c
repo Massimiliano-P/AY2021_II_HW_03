@@ -6,6 +6,16 @@
  * Authors: 
  * Beatrice Pedretti, Massimiliano Poletti
  * 
+ *
+ *
+ * main.c contains:
+ * - global variables declarations
+ * - the main program:
+ *      - initialization phase
+ *      - control updating managing
+ *      - sampling managing
+ * 
+ *
  * ========================================
 */
 
@@ -14,27 +24,43 @@
 #include "tools.h"
 
 
+/**
+ * GLOBAL VARIABLES 
+**/
+
 // EZI2C slave buffer 
 uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; 
+
+// control variables for the buffer
 uint8_t control_register_1; 
 uint8_t control_register_2; 
+
+// EZI2C flag: switched on by EZI2C_ISR_ExitCallback
 volatile uint8_t EZI2C_flag = 0;
 
-// state control variables
+// state 
 uint8_t state = ALL_OFF;  
 
-// sampling variables
-uint8_t n_samples; 
-uint32_t ldr_sum = 0; 
-uint32_t tmp_sum = 0; 
-uint8_t sample_index = 0; 
+// sampling 
+uint8_t n_samples; //number of samples to be averaged
+uint32_t ldr_sum = 0; // used to sum the ldr samples
+uint32_t tmp_sum = 0; // used to sum the tmp samples
+uint8_t sample_index = 0; //used to count the samples
 
-//sampling flag
+// sampling flag: switched on by ADC_sampling_isr
 volatile uint8_t do_sampling = 0;
 
 
+/**
+ * MAIN PROGRAM
+**/
+
 int main(void)
 {   
+    /**
+     * INITIALIZATION
+    **/
+    
     //enable global interrupts
     CyGlobalIntEnable;
     
@@ -43,11 +69,13 @@ int main(void)
     
     //initialize slaveBuffer
     init_slave();
-            
+    
+    //initialize the timer period
     Timer_ADC_WritePeriod(slaveBuffer[CTRL_REG_2]);
     
     for(;;)
     {
+        //check if the control has to be updated
         if (EZI2C_flag) 
         {
             update_control();
@@ -57,7 +85,7 @@ int main(void)
         switch (state)
         {                
             case ONLY_TMP: //state 01
-                //do_sampling is a flag set to 1 in the ISR when the timer reaches overflow
+                //do_sampling if a flag set to 1 in the ISR when the timer reaches overflow
                 //since ADC_DelSig_Read32() is a blocking function (as stated in its definition), we sample here instead of inside the ISR
                 if (do_sampling)
                 {
